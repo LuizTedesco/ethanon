@@ -28,8 +28,6 @@
 #include "../engine/ETHTypes.h"
 #include "../engine/Util/ETHASUtil.h"
 
-
-
 bool DirectoryExists(const std::string& dir)
 {
 	#warning todo

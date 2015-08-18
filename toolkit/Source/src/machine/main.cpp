@@ -43,8 +43,6 @@
 #include "../engine/ETHEngine.h"
 #include "../engine/Platform/ETHAppEnmlFile.h"
 
-//#include "Application.h"
-
 using namespace gs2d;
 using namespace gs2d::math;
 
@@ -52,7 +50,6 @@ void ProcParams(const int argc, gs2d::str_type::char_t* argv[], bool& compileAnd
 {
 	compileAndRun = true;
 	testing = false;
-	
 
 	wait = Application::GetPlatformName() == GS_L("macosx") ? false : true;
 
@@ -133,7 +130,6 @@ str_type::string FindResourceDir(const int argc, gs2d::str_type::char_t* argv[])
 	}
 	const str_type::string resourceDirectory = fileIOHub->GetResourceDirectory(); 
 
-	
 	const ETHAppEnmlFile app(resourceDirectory + ETH_APP_PROPERTIES_FILE, Platform::FileManagerPtr(new Platform::StdFileManager), Application::GetPlatformName());
 	const str_type::string bitmapFontPath = resourceDirectory + ETHDirectories::GetBitmapFontDirectory();
 

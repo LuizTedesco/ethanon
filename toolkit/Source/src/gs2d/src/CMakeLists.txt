@@ -115,7 +115,9 @@ if(WIN32)
 elseif(UNIX)
 
 	#Adiciona diretrizes de compilacao
-	add_definitions(-DMACOSX -DCD_USE_OWN_FILEUTILS )
+	#add_definitions(-DMACOSX -DCD_USE_OWN_FILEUTILS )
+	#PrecisaAquiMudar
+	add_definitions( -DCD_USE_OWN_FILEUTILS )
 
 	set(enmlFiles
 		Enml/Enml.cpp
@@ -160,10 +162,6 @@ elseif(UNIX)
 		Input/SDL/SDLJoystick.cpp
 	)
 		
-	set(FilePlatform2
-		${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Platform/macosx/MacOSXFileIOHub.mm
-		${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Platform/macosx/Platform.macosx.mm
-	)
 		
 	set(FilePlatformSDL
 		${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Platform/sdl/SDLWindow.cpp
@@ -173,31 +171,38 @@ elseif(UNIX)
 		${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Utilities/RecoverableResourceManager.cpp 
 	)
 
-	set(CocosDen
-		${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CDAudioContext.mm
-		${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CDAudioSample.mm					
-		${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/CDAudioManager.m
-		${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/CDOpenALSupport.m
-		#${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/CDXMacOSXSupport_original.m
-		${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/CDXMacOSXSupport.m
-		${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/CDXMacOSXSupport.readme.txt
-		#${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/CDXPropertyModifierAction.m
-		${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/CocosDenshion.m
-		${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/SimpleAudioEngine.m
-	)
-	
-	#Cria a biblioteca estatica GS2D para MacOsX
-	add_library(GS2D STATIC 
-		${enmlFiles} 
-		${inputLoosenFiles} 
-		${mathFiles} ${sourceFiles} 
-		${videoLoosenFiles}
-		${GLFiles} ${GLCGFiles} ${SDLINPUT} 
-		${FilePlatform2} ${FilePlatformSDL} ${CocosDen}
-		${Utilities}
-	)
-	
-	
+	IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+
+		set(FilePlatform2
+			${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Platform/macosx/MacOSXFileIOHub.mm
+			${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Platform/macosx/Platform.macosx.mm
+		)
+
+		set(CocosDen
+			${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CDAudioContext.mm
+			${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CDAudioSample.mm					
+			${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/CDAudioManager.m
+			${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/CDOpenALSupport.m
+			#${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/CDXMacOSXSupport_original.m
+			${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/CDXMacOSXSupport.m
+			${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/CDXMacOSXSupport.readme.txt
+			#${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/CDXPropertyModifierAction.m
+			${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/CocosDenshion.m
+			${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/CocosDenshion/CocosDenshion/SimpleAudioEngine.m
+		)
+		
+		#Cria a biblioteca estatica GS2D para MacOsX
+		add_library(GS2D STATIC 
+			${enmlFiles} 
+			${inputLoosenFiles} 
+			${mathFiles} ${sourceFiles} 
+			${videoLoosenFiles}
+			${GLFiles} ${GLCGFiles} ${SDLINPUT} 
+			${FilePlatform2} ${FilePlatformSDL} ${CocosDen}
+			${Utilities}
+		)
+		
+		
 		#Encontra e carrega configuracoes e um projeto externo
 		find_package(OpenGL REQUIRED)
 
@@ -215,6 +220,37 @@ elseif(UNIX)
 
 		#Inclui  o caminho para SDL2/SDL.h ao caminho de buscas do projeto
 		include_directories(${SDL2_INCLUDE_DIRS})
+
+	else()
+
+		add_definitions(-DGL_GLEXT_PROTOTYPES)
+
+
+		include_directories(
+			${PROJECT_SOURCE_DIR}/Source/src/gs2d/vendors/vendors/CgSDK/include/
+		)
+
+		set(Dummy
+			${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/Dummy/DummyAudioContext.cpp
+			${PROJECT_SOURCE_DIR}/Source/src/gs2d/src/Audio/Dummy/DummyAudioSample.cpp
+		)
+
+
+
+		#Cria a biblioteca estatica GS2D para MacOsX
+		add_library(GS2D STATIC 
+			${enmlFiles} 
+			${inputLoosenFiles} 
+			${mathFiles} ${sourceFiles} 
+			${videoLoosenFiles}
+			${GLFiles} ${GLCGFiles} ${SDLINPUT} 
+			${FilePlatform2} ${FilePlatformSDL} ${Dummy}
+			${Utilities}
+		)
+
+		
+
+	endif()
 
 #Fim do codigo verificador de plataforma
 endif()

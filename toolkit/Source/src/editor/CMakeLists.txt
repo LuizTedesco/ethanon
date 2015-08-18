@@ -139,62 +139,151 @@ elseif(UNIX)
 		main.cpp
 	)
 	
-	set(FileListing
-		${PROJECT_SOURCE_DIR}/Source/src/engine/Platform/macosx/FileListing.mm
-	)
+	IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+		set(FileListing
+			${PROJECT_SOURCE_DIR}/Source/src/engine/Platform/macosx/FileListing.mm
+		)
+		#PrecisaAquiMudar
+		set(macosX
+			EditorBase.macosx.mm
+		)
 
-	set(macosX
-		EditorBase.macosx.mm
-	)
+		#Procura as bibliotecas
+		find_library(SDL2_LIBRARY SDL2)
+		find_library( APPKIT_LIBRARY AppKit)
+		find_library( COREDATA_LIBRARY CoreData)
+		find_library( COCOA_LIBRARY Cocoa)
+		find_library( FOUNDATION_LIBRARY Foundation)
+		find_library( CG_LIBRARY Cg)
+		find_library( OPENGL_LIBRARY OpenGl)
+		find_library( AVFoundation_LIBRARY AVFoundation)
+		find_library( AudioToolbox_LIBRARY AudioToolbox)
+		find_library( OpenAL_LIBRARY OpenAL)
 
-	#Procura as bibliotecas
-	find_library(SDL2_LIBRARY SDL2)
-	find_library( APPKIT_LIBRARY AppKit)
-	find_library( COREDATA_LIBRARY CoreData)
-	find_library( COCOA_LIBRARY Cocoa)
-	find_library( FOUNDATION_LIBRARY Foundation)
-	find_library( CG_LIBRARY Cg)
-	find_library( OPENGL_LIBRARY OpenGl)
-	find_library( AVFoundation_LIBRARY AVFoundation)
-	find_library( AudioToolbox_LIBRARY AudioToolbox)
-	find_library( OpenAL_LIBRARY OpenAL)
+		#Encontra o caminho para SDL2/SDL.h
+		find_path(SDL2_INCLUDE_DIRS SDL2/SDL.h)
 
-	#Encontra o caminho para SDL2/SDL.h
-	find_path(SDL2_INCLUDE_DIRS SDL2/SDL.h)
+		#Inclui o caminho para SDL2/SDL.h ao caminho de busca do projeto
+		include_directories(${SDL2_INCLUDE_DIRS})
 
-	#Inclui o caminho para SDL2/SDL.h ao caminho de busca do projeto
-	include_directories(${SDL2_INCLUDE_DIRS})
-
+			
+		# Define diretrizes de processamento
+		add_definitions(-DNDEBUG -D_CONSOLE -D_ETHANON_EDITOR -D_CRT_SECURE_NO_WARNINGS -DUNSAFE_UTF8_ALLOWED)
 		
-	# Define diretrizes de processamento
-	add_definitions(-DNDEBUG -D_CONSOLE -D_ETHANON_EDITOR -D_CRT_SECURE_NO_WARNINGS -DUNSAFE_UTF8_ALLOWED)
-	
-	#GERA O EXECUTAVAL PARA MACOSX
-	add_executable(Ethanon_Editor 
-		${editorResource} ${editorSourceEditor} 
-		${editorSourceHelper} ${editorSourceLostFile}
-		${FileListing} ${macosX}
-	)
+		#GERA O EXECUTAVAL PARA MACOSX
+		add_executable(Ethanon_Editor 
+			${editorResource} ${editorSourceEditor} 
+			${editorSourceHelper} ${editorSourceLostFile}
+			${FileListing} ${macosX}
+		)
 
-	#ligando o executavel em todas suas dependencias.
-	target_link_libraries (Ethanon_Editor 
-		${APPKIT_LIBRARY}
-		${COREDATA_LIBRARY}
-		${COCOA_LIBRARY}
-		${FOUNDATION_LIBRARY}
-		${OPENGL_LIBRARY}
-		${CG_LIBRARY}
-		${SDL2_LIBRARY}
-		${AVFoundation_LIBRARY}
-		${AudioToolbox_LIBRARY}
-		${OpenAL_LIBRARY}
-		angelscript
-		hashlib
-		GS2D
-		Box2D
-		Soil
-		Ethanon_Engine
-		Platform
-	)
+		#ligando o executavel em todas suas dependencias.
+		target_link_libraries (Ethanon_Editor 
+			${APPKIT_LIBRARY}
+			${COREDATA_LIBRARY}
+			${COCOA_LIBRARY}
+			${FOUNDATION_LIBRARY}
+			${OPENGL_LIBRARY}
+			${CG_LIBRARY}
+			${SDL2_LIBRARY}
+			${AVFoundation_LIBRARY}
+			${AudioToolbox_LIBRARY}
+			${OpenAL_LIBRARY}
+			angelscript
+			hashlib
+			GS2D
+			Box2D
+			Soil
+			Ethanon_Engine
+			Platform
+		)
+	else()
+		
+		# Define diretrizes de processamento
+		add_definitions(-DNDEBUG -D_CONSOLE -D_ETHANON_EDITOR -D_CRT_SECURE_NO_WARNINGS -DUNSAFE_UTF8_ALLOWED)
+
+		include_directories(${PROJECT_SOURCE_DIR}/Source/src/gs2d/src)
+		
+
+		set(FileListing
+			${PROJECT_SOURCE_DIR}/Source/src/engine/Platform/linux/FileListing.linux.cpp
+		)
+		
+		set(linux
+			EditorBase.linux.cpp
+		)
+
+		INCLUDE(FindPkgConfig)
+
+		find_package(OpenGL REQUIRED)
+		include_directories(${OpenGL_INCLUDE_DIRS})
+		link_directories(${OpenGL_LIBRARY_DIRS})
+		add_definitions(${OpenGL_DEFINITIONS})
+		
+		#set(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/Utilites/cmake-modules)
+
+
+		set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/Utilites/cmake-modules/")
+		
+
+		#find_package(SDL2 REQUIRED)
+		#include_directories(${SDL2_INCLUDE_DIR})
+
+
+
+
+
+		# sdl2
+		INCLUDE(${CMAKE_SOURCE_DIR}/Utilites/cmake-modules/FindSDL2.cmake)
+
+		find_package(SDL2 REQUIRED)
+		include_directories(${SDL2_INCLUDE_DIR})
+		#link_directories(${SDL2_LIBRARY_DIRS})
+		add_definitions(${SDL2_DEFINITIONS})
+
+
+		# Cg
+		INCLUDE(${CMAKE_SOURCE_DIR}/Utilites/cmake-modules/FindCg.cmake)
+		find_package(Cg REQUIRED)
+		include_directories(${Cg_INCLUDE_DIR})
+		#link_directories(${Cg_LIBRARY_DIRS})
+		add_definitions(${Cg_DEFINITIONS})
+		
+
+
+		#find_package(Cg REQUIRED)
+		#include_directories(${CG_INCLUDE_DIR})	
+		#include_directories(${CG_Gl_INCLUDE_DIR})	
+		
+		#GERA O EXECUTAVAL PARA Linux
+		add_executable(Ethanon_Editor 
+			${editorResource} ${editorSourceEditor} 
+			${editorSourceHelper} ${editorSourceLostFile}
+			${FileListing} ${linux}
+		)
+
+		#ligando o executavel em todas suas dependencias.
+		target_link_libraries (Ethanon_Editor 
+
+			Platform
+			hashlib
+			Ethanon_Engine
+			angelscript
+			Box2D
+			GS2D
+			Soil
+			Platform
+			
+
+			${OPENGL_LIBRARY}
+			
+			${CG_LIBRARY}
+
+			${CG_GL_LIBRARY}
+
+			${SDL2_LIBRARY}
+		)
+
+	endif()
 
 endif()

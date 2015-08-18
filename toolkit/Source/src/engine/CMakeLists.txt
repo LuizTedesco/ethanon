@@ -247,6 +247,7 @@ if(WIN32)
 	source_group(Platform FILES ${enginePlatform})
 	source_group(Vendors\\tinyxml FILES ${engineVendors})
 	
+
 #Codigo verificador de platafroma	
 elseif(UNIX)
 	
@@ -369,18 +370,27 @@ elseif(UNIX)
 	)
 	
 	
-	set(enginePlatform
-		Platform/ETHAppEnmlFile.cpp
-		Platform/ETHPlatform.abstract.cpp
-		Platform/windows/ETHPlatform.windows.cpp
-		Platform/FileListing.abstract.cpp
-		Platform/windows/FileListing.windows.cpp
-	)
+#	set(enginePlatform
+#		Platform/ETHAppEnmlFile.cpp
+#		Platform/ETHPlatform.abstract.cpp
+#		Platform/windows/ETHPlatform.windows.cpp
+#		Platform/FileListing.abstract.cpp
+#		Platform/windows/FileListing.windows.cpp
+#	)
 
 	set(enginePlatformMaxOSX
 		Platform/ETHAppEnmlFile.cpp
 		Platform/ETHPlatform.abstract.cpp
 		Platform/FileListing.abstract.cpp
+	)
+
+	set(enginePlatformLinux
+
+		Platform/ETHAppEnmlFile.cpp
+		Platform/ETHPlatform.abstract.cpp
+		Platform/FileListing.abstract.cpp
+		#Platform/linux/FileListing.linux.cpp achei que podia ser  isso
+
 	)
 	
 	set(engineVendors
@@ -400,21 +410,33 @@ elseif(UNIX)
 		${PROJECT_SOURCE_DIR}/Source/src/vendors/tinyxml_ansi/tinyxmlerror.cpp
 		${PROJECT_SOURCE_DIR}/Source/src/vendors/tinyxml_ansi/tinyxmlparser.cpp
 	)
-		
-	#Gera Biblioteca estatica Ethanon_engine para MacOsX
-	add_library(Ethanon_Engine STATIC ${engineCoreDrawing} ${engineCoreEntity}
-		${engineCoreParticles} ${engineCorePhysics} ${engineCoreRenderer} 
-		${engineCoreResouce} ${engineCoreScene} ${engineCoreScriptLoosenFiles} 
-		${engineCoreScriptGeneric} ${engineCoreScriptAddons}
-		${engineCoreShader} ${engineCoreUtil} ${engineCoreLoosenFiles} ${enginePlatformMaxOSX}
-		${engineVendors} ${FilesForMac} ${Tiny}
-	)
 
-	#Encontra uma Biblioteca
-	find_library( APPKIT_LIBRARY AppKit)
-	find_library( COREDATA_LIBRARY CoreData)
-	find_library( COCOA_LIBRARY Cocoa)
-	find_library( FOUNDATION_LIBRARY Foundation)
+	IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+		#Gera Biblioteca estatica Ethanon_engine para MacOsX
+		add_library(Ethanon_Engine STATIC ${engineCoreDrawing} ${engineCoreEntity}
+			${engineCoreParticles} ${engineCorePhysics} ${engineCoreRenderer} 
+			${engineCoreResouce} ${engineCoreScene} ${engineCoreScriptLoosenFiles} 
+			${engineCoreScriptGeneric} ${engineCoreScriptAddons}
+			${engineCoreShader} ${engineCoreUtil} ${engineCoreLoosenFiles} ${enginePlatformMaxOSX}
+			${engineVendors} ${FilesForMac} ${Tiny}
+		)
+
+		#Encontra uma Biblioteca
+		find_library( APPKIT_LIBRARY AppKit)
+		find_library( COREDATA_LIBRARY CoreData)
+		find_library( COCOA_LIBRARY Cocoa)
+		find_library( FOUNDATION_LIBRARY Foundation)
+	else()
+
+		add_library(Ethanon_Engine STATIC ${engineCoreDrawing} ${engineCoreEntity}
+				${engineCoreParticles} ${engineCorePhysics} ${engineCoreRenderer} 
+				${engineCoreResouce} ${engineCoreScene} ${engineCoreScriptLoosenFiles} 
+				${engineCoreScriptGeneric} ${engineCoreScriptAddons}
+				${engineCoreShader} ${engineCoreUtil} ${engineCoreLoosenFiles} ${enginePlatformLinux}
+				${engineVendors} ${Tiny}
+		)
+
+	endif()
 		
 #Fim do Codigo Seletor	
 endif()

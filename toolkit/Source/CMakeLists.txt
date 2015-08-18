@@ -70,7 +70,11 @@ elseif(UNIX)
 	)
 
 	#Define diretrizes de compilacao
-	add_definitions(-D_ETHANON_EDITOR -D_CONSOLE -D_CRT_SECURE_NO_WARNINGS -DCD_USE_OWN_FILEUTILS -DMACOSX -DOPENGL)
+	
+	#add_definitions(-D_ETHANON_EDITOR -D_CONSOLE -D_CRT_SECURE_NO_WARNINGS -DCD_USE_OWN_FILEUTILS -DMACOSX -DOPENGL)
+
+	#PrecisaAquiMudar
+	add_definitions(-D_ETHANON_EDITOR -D_CONSOLE -D_CRT_SECURE_NO_WARNINGS -DCD_USE_OWN_FILEUTILS)
 
 	# Seta o local onde devem ser colocadas pelo CMake as bibliotecas geradas
 	set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
@@ -79,16 +83,22 @@ elseif(UNIX)
 	set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 
 	#Set de flags necessarias ao Ethanon
-	set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -std=gnu99")
-	set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -std=gnu99")
+
+	IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+		set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -std=gnu99")
+		set(CMAKE_C_FLAGS_DEBUG "${CMAKE_C_FLAGS_DEBUG} -std=gnu99")
+	endif()
 	SET(LIBRARY_OUTPUT_PATH ${PROJECT_BINARY_DIR}/lib)
 	SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/bin)
 
 	add_subdirectory(src)								#Platform
-	add_subdirectory(src/editor)
-	add_subdirectory(src/machine)
-	add_subdirectory(src/engine)
-	add_subdirectory(src/gs2d/src)	
+
+	add_subdirectory(src/editor) 
+	add_subdirectory(src/machine) 
+	add_subdirectory(src/engine)  
+	add_subdirectory(src/gs2d/src) 
+
+
 	add_subdirectory(src/box2d/Box2D)
 	add_subdirectory(src/angelscript)					#AngelScript
 	add_subdirectory(src/soil)
@@ -103,30 +113,16 @@ elseif(UNIX)
 		DESTINATION ${CMAKE_BINARY_DIR}/bin/assets
 	)
 
-
-	#Encontra bibliotecas
-	find_library( APPKIT_LIBRARY AppKit)
-	find_library( COREDATA_LIBRARY CoreData)
-	find_library( COCOA_LIBRARY Cocoa)
-	find_library( FOUNDATION_LIBRARY Foundation)
+	#AQUI
+	IF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+		#Encontra bibliotecas
+		find_library( APPKIT_LIBRARY AppKit)
+		find_library( COREDATA_LIBRARY CoreData)
+		find_library( COCOA_LIBRARY Cocoa)
+		find_library( FOUNDATION_LIBRARY Foundation)
+	endif()
 
 
 #Fim do codigo verificador de platafroma
 endif()	
 
-#codigo morto eu acho
-set(
-	MODULES
-
-	angelscript
-	audiere
-	Box2D
-	Ethanon_Editor
-	Ethanon_Engine
-	Ethanon_Machine
-	GS2D
-	hashlib
-	libzip
-	Platform
-	zlib
-)

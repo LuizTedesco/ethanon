@@ -47,7 +47,7 @@ GLVideo::GLVideo() :
 	m_backgroundColor(gs2d::constant::BLACK),
 	m_rendering(false),
 	m_clamp(true),
-    m_blendMode(BM_MODULATE),
+	m_blendMode(BM_MODULATE),
 	m_scissor(math::Vector2i(0, 0), math::Vector2i(0, 0))
 {
 }
@@ -61,21 +61,11 @@ bool GLVideo::StartApplication(
 	const Texture::PIXEL_FORMAT pfBB,
 	const bool maximizable)
 {
-	SetFilterMode(Video::TM_ALWAYS);
-	SetAlphaMode(Video::AM_PIXEL);
-
-	SetZBuffer(false);
-	SetZWrite(false);
-	SetClamp(true);
-	SetBlendMode(1, Video::BM_MODULATE);
-
-	Enable2DStates();
-
 	// don't reset cg context if it is an opengl context reset
 	if (!m_shaderContext)
 		m_shaderContext = GLCgShaderContextPtr(new GLCgShaderContext);
 
-	if (!m_defaultVS)
+if (!m_defaultVS)
 		m_defaultVS = LoadShaderFromString("defaultShader", gs2dglobal::defaultVSCode, Shader::SF_VERTEX, Shader::SP_MODEL_2, "sprite");
 
 	if (!m_rectVS)
@@ -92,6 +82,18 @@ bool GLVideo::StartApplication(
 
 	if (!m_defaultPS)
 		m_defaultPS = LoadShaderFromString("minimal", gs2dglobal::defaultFragmentShaders, Shader::SF_PIXEL, Shader::SP_MODEL_1, "minimal");
+
+	SetFilterMode(Video::TM_ALWAYS);
+	SetAlphaMode(Video::AM_PIXEL);
+
+	SetZBuffer(false);
+	SetZWrite(false);
+	SetClamp(true);
+	SetBlendMode(1, Video::BM_MODULATE);
+
+	Enable2DStates();
+
+	
 
 	m_currentVS = m_defaultVS;
     m_currentPS = m_defaultPS;

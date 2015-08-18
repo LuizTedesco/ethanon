@@ -30,8 +30,9 @@
 
 #include <sys/time.h>
 
+//#PrecisaAquiMudar
 #include <SDL2/SDL_video.h>
-
+//#include <SDL/SDL_video.h>
 
 namespace gs2d {
 

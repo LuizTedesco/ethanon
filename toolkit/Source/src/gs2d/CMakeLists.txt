@@ -52,7 +52,7 @@ if(WIN32)
 
 
 #Codigo verificador de plataforma
-elseif(UNIX)
+elseIF(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
 
 	# Busca no sistema se existe SDL2
 	find_library(SDL2_LIBRARY SDL2)
@@ -89,6 +89,35 @@ elseif(UNIX)
 
 	# gera a biblioteca Platform, estatica, para MacOsX
 	add_library(Platform STATIC ${sharedData} ${macosx} ${randPlatformFiles} ${sdl})
+
+else()
+
+	set(sharedData
+		src/Platform/SharedData/SharedData.cpp
+		src/Platform/SharedData/SharedDataManager.cpp
+	)
+	
+
+	set(linux
+		src/Platform/linux/Platform.linux.cpp
+		src/Platform/linux/LinuxFileIOHub.cpp
+	)
+
+	set(randPlatformFiles
+		src/Platform/Platform.cpp
+		src/Platform/FileIOHub.cpp
+		src/Platform/FileLogger.cpp
+		src/Platform/FileManager.cpp
+		src/Platform/StdFileManager.cpp
+	)
+
+	
+	set(sdl
+		src/Platform/sdl/SDLWindow.cpp
+	)
+
+	# gera a biblioteca Platform, estatica, para Unix
+	add_library(Platform STATIC ${sharedData} ${linux} ${randPlatformFiles} ${sdl})
 
 #Fim da verificacao de plataformas
 endif()

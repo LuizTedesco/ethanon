@@ -31,6 +31,7 @@
 
 #include <Math/Randomizer.h>
 
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -185,7 +186,7 @@ const ETHParticleSystem *ETHParticleManager::GetSystem() const
 	return &m_system;
 }
 
-bool ETHParticleManager::UpdateParticleSystem(
+void ETHParticleManager::UpdateParticleSystem(
 	const Vector2& v2Pos,
 	const Vector3& v3Pos,
 	const float angle,
@@ -193,77 +194,112 @@ bool ETHParticleManager::UpdateParticleSystem(
 {
 	bool anythingDrawn = false;
 	const float cappedLastFrameElapsedTime = Min(lastFrameElapsedTime, 250.0f);
-	const float frameSpeed = static_cast<float>((static_cast<double>(cappedLastFrameElapsedTime) / 1000.0) * 60.0);
 
 	Matrix4x4 rot = RotateZ(DegreeToRadian(angle));
 	m_nActiveParticles = 0;
 	for (int t = 0; t < m_system.nParticles; t++)
 	{
-		PARTICLE& particle = m_particles[t];
+		UpdateParticle(
+			t,
+			false, // hasJustBeenReset
+			v2Pos,
+			v3Pos,
+			angle,
+			cappedLastFrameElapsedTime,
+			rot,
+			anythingDrawn);
+	}
+	m_finished = !anythingDrawn;
+}
 
-		if (m_system.repeat > 0)
-			if (particle.repeat >= m_system.repeat)
-				continue;
+void ETHParticleManager::UpdateParticle(
+	const int t,
+	const bool hasJustBeenReset,
+	const Vector2& v2Pos,
+	const Vector3& v3Pos,
+	const float angle,
+	const float lastFrameElapsedTime,
+	const Matrix4x4& rot,
+	bool& anythingDrawn)
+{
+	PARTICLE& particle = m_particles[t];
 
-		// check how many particles are active
-		if (particle.size > 0.0f && particle.released)
-		{
+	if (m_system.repeat > 0)
+		if (particle.repeat >= m_system.repeat)
+			return;
+
+	// check how many particles are active
+	if (particle.size > 0.0f && particle.released)
+	{
+		if (!hasJustBeenReset)
 			if (!Killed() || (Killed() && particle.elapsed < particle.lifeTime))
 				m_nActiveParticles++;
-		}
+	}
 
-		anythingDrawn = true;
+	anythingDrawn = true;
 
-		particle.elapsed += lastFrameElapsedTime;
+	particle.elapsed += lastFrameElapsedTime;
 
-		if (!particle.released)
+	if (!particle.released)
+	{
+		// if we shouldn't release all particles at the same time, check if it's time to release this particle
+		const float releaseTime = 
+			((m_system.lifeTime + m_system.randomizeLifeTime) * (static_cast<float>(particle.id) / static_cast<float>(m_system.nParticles)));
+
+		if (particle.elapsed > releaseTime || m_system.allAtOnce)
 		{
-			// if we shouldn't release all particles at the same time, check if it's time to release this particle
-			const float releaseTime = 
-				((m_system.lifeTime + m_system.randomizeLifeTime) * (static_cast<float>(particle.id) / static_cast<float>(m_system.nParticles)));
+			particle.elapsed = 0.0f;
+			particle.released = true;
+			PositionParticle(t, v2Pos, angle, rot, v3Pos);
+		}
+	}
 
-			if (particle.elapsed > releaseTime || m_system.allAtOnce)
+	if (particle.released)
+	{
+		const float frameSpeed = static_cast<float>((static_cast<double>(lastFrameElapsedTime) / 1000.0) * 60.0);
+		particle.dir += (m_system.gravityVector * frameSpeed);
+		particle.pos += (particle.dir * frameSpeed);
+		particle.angle += (particle.angleDir * frameSpeed);
+		particle.size  += (m_system.growth * frameSpeed);
+		const float w = particle.elapsed / particle.lifeTime;
+		particle.color = m_system.color0 + (m_system.color1 - m_system.color0) * w;
+
+		// update particle animation if there is any
+		if (m_system.spriteCut.x > 1 || m_system.spriteCut.y > 1)
+		{
+			if (m_system.animationMode == ETHParticleSystem::PLAY_ANIMATION)
 			{
-				particle.elapsed = 0.0f;
-				particle.released = true;
-				PositionParticle(t, v2Pos, angle, rot, v3Pos);
+				particle.currentFrame = static_cast<unsigned int>(
+					Min(static_cast<int>(static_cast<float>(m_system.GetNumFrames()) * w),
+						m_system.GetNumFrames() - 1));
 			}
 		}
 
-		if (particle.released)
-		{
-			particle.dir += (m_system.gravityVector * frameSpeed);
-			particle.pos += (particle.dir * frameSpeed);
-			particle.angle += (particle.angleDir * frameSpeed);
-			particle.size  += (m_system.growth * frameSpeed);
-			const float w = particle.elapsed / particle.lifeTime;
-			particle.color = m_system.color0 + (m_system.color1 - m_system.color0) * w;
+		particle.size = Min(particle.size, m_system.maxSize);
+		particle.size = Max(particle.size, m_system.minSize);
 
-			// update particle animation if there is any
-			if (m_system.spriteCut.x > 1 || m_system.spriteCut.y > 1)
+		if (particle.elapsed > particle.lifeTime)
+		{
+			particle.repeat++;
+			if (!Killed())
 			{
-				if (m_system.animationMode == ETHParticleSystem::PLAY_ANIMATION)
+				const float diff = particle.elapsed - particle.lifeTime;
+				ResetParticle(t, v2Pos, v3Pos, angle, rot);
+				if (diff > 0.0f && particle.lifeTime > 0.0f)
 				{
-					particle.currentFrame = static_cast<unsigned int>(
-						Min(static_cast<int>(static_cast<float>(m_system.GetNumFrames()) * w),
-							m_system.GetNumFrames() - 1));
+					UpdateParticle(
+						t,
+						true, // hasJustBeenReset
+						v2Pos,
+						v3Pos,
+						angle,
+						diff,
+						rot,
+						anythingDrawn);
 				}
-			}
-
-			particle.size = Min(particle.size, m_system.maxSize);
-			particle.size = Max(particle.size, m_system.minSize);
-
-			if (particle.elapsed > particle.lifeTime)
-			{
-				particle.repeat++;
-				if (!Killed())
-					ResetParticle(t, v2Pos, v3Pos, angle, rot);
 			}
 		}
 	}
-	m_finished = !anythingDrawn;
-
-	return true;
 }
 
 bool ETHParticleManager::Finished() const
@@ -496,11 +532,14 @@ void ETHParticleManager::ResetParticle(
 		if (m_system.animationMode == ETHParticleSystem::PLAY_ANIMATION)
 		{
 			particle.currentFrame = 0;
-		} else
+		}
+		else
+		{
 			if (m_system.animationMode == ETHParticleSystem::PICK_RANDOM_FRAME)
 			{
 				particle.currentFrame = Randomizer::Int(m_system.spriteCut.x * m_system.spriteCut.y - 1);
 			}
+		}
 	}
 }
 

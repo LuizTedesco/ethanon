@@ -290,16 +290,21 @@ public:
 
 	static SpritePtr LoadAndGetSprite(const str_type::string &name);
 	static void DrawShapedFromPtr(const SpritePtr& sprite, const Vector2 &v2Pos, const Vector2 &v2Size, const GS_DWORD color, const float angle);
+	static void DrawShapedFromPtr(const SpritePtr& sprite, const Vector2 &v2Pos, const Vector2 &v2Size, const Vector4 &color, const float angle);
 	static void LoadSprite(const str_type::string& name);
 	static bool ReleaseSprite(const str_type::string& name);
 	static void DrawSprite(const str_type::string &name, const Vector2 &v2Pos, const GS_DWORD color, const float angle);
 	static void DrawShaped(const str_type::string &name, const Vector2 &v2Pos, const Vector2 &v2Size, const GS_DWORD color, const float angle);
+	static void DrawSprite(const str_type::string &name, const Vector2 &v2Pos, const float alpha, const Vector3 &color, const float angle);
+	static void DrawShaped(const str_type::string &name, const Vector2 &v2Pos, const Vector2 &v2Size, const float alpha, const Vector3 &color, const float angle);
 	static void PlayParticleEffect(const str_type::string& fileName, const Vector2& pos, const float angle, const float scale);
 	static Vector2 GetSpriteSize(const str_type::string &name);
 	static Vector2 GetSpriteFrameSize(const str_type::string& name);
 	static void SetupSpriteRects(const str_type::string& name, const unsigned int columns, const unsigned int rows);
 	static void SetSpriteRect(const str_type::string& name, const unsigned int frame);
 	static void SetSpriteOrigin(const str_type::string& name, const Vector2& origin);
+	static void SetSpriteFlipX(const str_type::string& name, const bool flip);
+	static void SetSpriteFlipY(const str_type::string& name, const bool flip);
 	static void DrawLine(const Vector2 &v2A, const Vector2 &v2B, const Color a, const Color b, const float width);
 	// static void PlayCutscene(const str_type::string &fileName);
 	static bool Windowed();

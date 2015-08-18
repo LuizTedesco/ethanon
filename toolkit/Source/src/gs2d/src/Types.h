@@ -37,6 +37,7 @@
 
 #include <string>
 #include <sstream>
+#include <stdio.h>
 
 namespace gs2d {
 
